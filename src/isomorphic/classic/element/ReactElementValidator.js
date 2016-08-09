@@ -181,6 +181,66 @@ function validatePropTypes(element) {
   }
 }
 
+/**
+ * Given an element, freeze its non-static properties and defaultProps.
+ *
+ * @param {ReactElement} element
+ */
+function freezeClassAndDefaultProps(element) {
+  var type = element.type;
+  if (typeof type !== 'function' || type.wasTaggedReactComponent) {
+    return;
+  }
+
+  var immutableDescriptor = { writable: false, configurable: false };
+
+  Object.defineProperty(type, 'wasTaggedReactComponent', { value: true });
+  Object.defineProperty(type, 'defaultProps', immutableDescriptor);
+  Object.defineProperty(type.prototype, 'getInitialState', immutableDescriptor);
+  Object.defineProperty(type.prototype, 'getChildContext', immutableDescriptor);
+  Object.defineProperty(type.prototype, 'render', immutableDescriptor);
+  Object.defineProperty(
+    type.prototype,
+    'componentWillMount',
+    immutableDescriptor
+  );
+  Object.defineProperty(
+    type.prototype,
+    'componentDidMount',
+    immutableDescriptor
+  );
+  Object.defineProperty(
+    type.prototype,
+    'componentWillReceiveProps',
+    immutableDescriptor
+  );
+  Object.defineProperty(
+    type.prototype,
+    'shouldComponentUpdate',
+    immutableDescriptor
+  );
+  Object.defineProperty(
+    type.prototype,
+    'componentWillUpdate',
+    immutableDescriptor
+  );
+  Object.defineProperty(
+    type.prototype,
+    'componentDidUpdate',
+    immutableDescriptor
+  );
+  Object.defineProperty(
+    type.prototype,
+    'componentWillUnmount',
+    immutableDescriptor
+  );
+  Object.defineProperty(type.prototype, 'updateComponent', immutableDescriptor);
+
+  Object.freeze(type);
+  Object.freeze(type.defaultProps);
+  Object.freeze(type.prototype);
+}
+
 var ReactElementValidator = {
 
   createElement: function(type, props, children) {
@@ -216,6 +276,10 @@ var ReactElementValidator = {
     }
 
     validatePropTypes(element);
+
+    if(__DEV__) {
+      freezeClassAndDefaultProps(element);
+    }
 
     return element;
   },
