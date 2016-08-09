@@ -277,7 +277,7 @@ var ReactElementValidator = {
 
     validatePropTypes(element);
 
-    if(__DEV__) {
+    if (__DEV__) {
       freezeClassAndDefaultProps(element);
     }
 
